@@ -5,6 +5,15 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { LoadMore } from './LoadMore/LoadMore';
 import { Loader } from './Loader/Loader';
 
+// export default function AppTest() {
+//   const [images, setImages] = useState([]);
+//   const [query, setQuery] = useState('');
+//   const [page, setPage] = useState(1);
+//   const [totalHits, setTotalHits] = useState(0);
+//   const [isLoading, setIsLoading] = useState(0);
+
+// }
+
 class App extends Component {
   state = {
     images: [],
