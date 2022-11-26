@@ -1,72 +1,61 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SearchBar } from './SearchBar/SearchBar';
 import { fetchImages } from '../helpers/pixabayApi';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { LoadMore } from './LoadMore/LoadMore';
 import { Loader } from './Loader/Loader';
 
-// export default function AppTest() {
-//   const [images, setImages] = useState([]);
-//   const [query, setQuery] = useState('');
-//   const [page, setPage] = useState(1);
-//   const [totalHits, setTotalHits] = useState(0);
-//   const [isLoading, setIsLoading] = useState(0);
+export default function App() {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalHits, setTotalHits] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-// }
+  // console.log(totalHits);
 
-class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    totalHits: 0,
-    isLoading: false,
-  };
-
-  handleSubmitForm = query => {
-    this.setState({ query, page: 1 });
-  };
-
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-
-  componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
-      this.setState({ isLoading: true });
-      fetchImages(query, page)
-        .then(data => {
-          this.setState(prev => ({
-            images: page === 1 ? data.hits : [...prev.images, ...data.hits],
-            totalHits:
-              page === 1
-                ? data.totalHits - data.hits.length
-                : data.totalHits - [...prev.images, ...data.hits].length,
-          }));
-        })
-        .finally(() => {
-          this.setState({ isLoading: false });
+  useEffect(() => {
+    setIsLoading(true);
+    fetchImages(query, page)
+      .then(data => {
+        setImages(images => {
+          console.log(images);
+          if (page === 1) {
+            return data.hits;
+          } else {
+            return [...images, ...data.hits];
+          }
         });
-    }
-  }
+        setTotalHits(totalHits => {
+          if (page === 1) {
+            return data.totalHits - data.hits.length;
+          } else {
+            return totalHits - data.hits.length;
+          }
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [query, page]);
 
-  render() {
-    return (
-      <>
-        <SearchBar onSubmit={this.handleSubmitForm} />
+  const handleSubmitForm = query => {
+    setQuery(query);
+    setPage(1);
+  };
 
-        <ImageGallery images={this.state.images} />
+  const handleLoadMore = () => {
+    setPage(page + 1);
+  };
 
-        {!!this.state.totalHits &&
-          (!this.state.isLoading ? (
-            <LoadMore onLoadMore={this.handleLoadMore} />
-          ) : (
-            <Loader />
-          ))}
-      </>
-    );
-  }
+  return (
+    <>
+      <SearchBar onSubmit={handleSubmitForm} />
+
+      <ImageGallery images={images} />
+
+      {!!totalHits &&
+        (!isLoading ? <LoadMore onLoadMore={handleLoadMore} /> : <Loader />)}
+    </>
+  );
 }
-
-export default App;
